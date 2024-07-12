@@ -1,0 +1,178 @@
+use crate::ast::{Expr, Operator};
+
+grammar;
+
+pub Program: Expr = {
+    <stmts:Statements> => Expr::Program(stmts),
+};
+
+pub Expr: Expr = {
+    <func_call_expr:FuncCall> => func_call_expr,
+    <func_def:FuncDef> => func_def,
+    <main_func_def:MainFuncDef> => main_func_def,
+    <decl:Decl> => decl,
+    <assign_expr:AssignExpr> => assign_expr,
+    <print_stmt:PrintStmt> => print_stmt,
+    <print:Print> => print,
+    <if_else_stmt:IfElse> => if_else_stmt,
+    <while_stmt:WhileStmt> => while_stmt,
+    <comparison_expr:ComparisonExpr> => comparison_expr,
+    <add_expr:AddExpr> => add_expr,
+};
+
+pub Statement: Expr = {
+    <func_def:FuncDef> => func_def,
+    <main_func_def:MainFuncDef> => main_func_def,
+    <decl:Decl> ";" => decl,
+    <assign_expr:AssignExpr> ";" => assign_expr,
+    <ret_stmt:ReturnStmt> => ret_stmt,
+    <print_stmt:PrintStmt> => print_stmt,
+    <print:Print> => print,
+    <if_else_stmt:IfElse> => if_else_stmt,
+    <while_stmt:WhileStmt> => while_stmt,
+    <comparison_expr:ComparisonExpr> ";" => comparison_expr,
+    <add_expr:AddExpr> ";" => add_expr,
+};
+
+pub MainFuncDef: Expr = {
+    "main" ":" "function" "void" "(" ")" "=" "{" <body:StatementsOpt> "}" => Expr::MainFuncDef(Box::new(Expr::Statements(body))),
+};
+
+pub ReturnStmt: Expr = {
+    "return" <expr:Expr> ";" => Expr::Return(Box::new(expr)),
+};
+
+pub PrintStmt: Expr = {
+    "print" <str:Str> ";" => Expr::PrintStr(str),
+};
+
+pub Print: Expr = {
+    "print" <expr:Expr> ";" => Expr::Print(Box::new(expr)),
+};
+
+pub Decl: Expr = {
+    <id:Ident> ":" <ty:Type> => Expr::VarDeclaration(id, ty),
+    <id:Ident> ":" <ty:Type> "=" <expr:Expr> => Expr::VarDeclarationWithAssignment(id, ty, Box::new(expr)),
+};
+
+pub FuncDef: Expr = {
+    <id:Ident> ":" "function" <ret_type:Type> "(" <params:ParamsOpt> ")" "=" "{" <body:StatementsOpt> "}" => Expr::FuncDef(id, ret_type, params, Box::new(Expr::Statements(body))),
+};
+
+pub FuncCall: Expr = {
+    <id:Ident> "(" <args:ArgsOpt> ")" => Expr::FuncCall(id, args),
+};
+
+pub IfElse: Expr = {
+    "if" "(" <cond:Expr> ")" "{" <then_branch:StatementsOpt> "}" "else" "{" <else_branch:StatementsOpt> "}" => Expr::If(Box::new(cond), Box::new(Expr::Statements(then_branch)), Some(Box::new(Expr::Statements(else_branch)))),
+    "if" "(" <cond:Expr> ")" "{" <then_branch:StatementsOpt> "}" => Expr::If(Box::new(cond), Box::new(Expr::Statements(then_branch)), None),
+};
+
+pub WhileStmt: Expr = {
+    "while" "(" <condition:Expr> ")" "{" <body:StatementsOpt> "}" => Expr::While(Box::new(condition), Box::new(Expr::Statements(body))),
+};
+
+pub ComparisonExpr: Expr = {
+    <left:AddExpr> ">" <right:AddExpr> => Expr::Binary(Box::new(left), Operator::GreaterThan, Box::new(right)),
+    <left:AddExpr> "<" <right:AddExpr> => Expr::Binary(Box::new(left), Operator::LessThan, Box::new(right)),
+    <left:AddExpr> "<=" <right:AddExpr> => Expr::Binary(Box::new(left), Operator::LessThanEqual, Box::new(right)),
+    <left:AddExpr> ">=" <right:AddExpr> => Expr::Binary(Box::new(left), Operator::GreaterThanEqual, Box::new(right)),
+    <left:AddExpr> "==" <right:AddExpr> => Expr::Binary(Box::new(left), Operator::Equal, Box::new(right)),
+    <left:AddExpr> "!=" <right:AddExpr> => Expr::Binary(Box::new(left), Operator::NotEqual, Box::new(right)),
+
+};
+
+Bool: bool = {
+    "true" => true,
+    "false" => false,
+};
+
+pub ParamsOpt: Vec<(String, String)> = {
+    => Vec::new(),
+    <params:Params> => params,
+};
+
+pub Params: Vec<(String, String)> = {
+    <param:Param> => vec![param],
+    <head:Params> "," <tail:Param> => {
+        let mut params = head;
+        params.push(tail);
+        params
+    },
+};
+
+pub Param: (String, String) = {
+    <id:Ident> ":" <ty:Type> => (id, ty),
+};
+
+pub ArgsOpt: Vec<Expr> = {
+    => Vec::new(),
+    <args:Args> => args,
+};
+
+pub Args: Vec<Expr> = {
+    <expr:Expr> => vec![expr],
+    <head:Args> "," <tail:Expr> => {
+        let mut args = head;
+        args.push(tail);
+        args
+    },
+};
+
+
+pub StatementsOpt: Vec<Expr> = {
+    => Vec::new(),
+    <stmts:Statements> => stmts,
+};
+
+pub Statements: Vec<Expr> = {
+    <stmt:Statement> => vec![stmt],
+    <head:Statements> <stmt:Statement> => {
+        let mut stmts = head;
+        stmts.push(stmt);
+        stmts
+    },
+};
+
+pub AssignExpr: Expr = {
+    <left:Ident> "=" <right:Expr> => Expr::Assign(Box::new(Expr::Variable(left)), Box::new(right)),
+};
+
+pub AddExpr: Expr = {
+    <left:AddExpr> "+" <right:MulExpr> => Expr::Binary(Box::new(left), Operator::Add, Box::new(right)),
+    <left:AddExpr> "-" <right:MulExpr> => Expr::Binary(Box::new(left), Operator::Subtract, Box::new(right)),
+    <expr:MulExpr> => expr,
+};
+
+pub MulExpr: Expr = {
+    <left:MulExpr> "*" <right:Factor> => Expr::Binary(Box::new(left), Operator::Multiply, Box::new(right)),
+    <left:MulExpr> "/" <right:Factor> => Expr::Binary(Box::new(left), Operator::Divide, Box::new(right)),
+    <factor:Factor> => factor,
+};
+
+pub Factor: Expr = {
+    <n:Num> => Expr::Number(n),
+    <id:Ident> => Expr::Variable(id),
+    <b:Bool> => Expr::Boolean(b),
+    "(" <expr:Expr> ")" => expr,
+};
+
+
+Num: i32 = {
+    <n:r"[0-9]+"> => n.parse().unwrap(),
+};
+
+Ident: String = {
+    <id:r"[a-zA-Z_][a-zA-Z0-9_]*"> => id.to_string(),
+};
+
+Type: String = {
+    "integer" => "integer".to_string(),
+    "bool" => "bool".to_string(),
+    "string" => "string".to_string(),
+    "void" => "void".to_string(),
+};
+
+Str: String = {
+    <s:r#""[^"]*""#> => s[1..s.len()-1].to_string(),
+};

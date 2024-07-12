@@ -1,0 +1,15 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2021"
+
+[build-dependencies]
+lalrpop = "0.20.2"
+
+[dependencies]
+logos = "0.14.0"
+lalrpop-util = { version = "0.20.2", features = ["lexer", "unicode"] }
+regex = "1.5.4"
+term = "0.7.0"
+log = "0.4.21"
+

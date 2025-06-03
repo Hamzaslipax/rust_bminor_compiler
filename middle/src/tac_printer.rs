@@ -218,6 +218,12 @@ pub fn print_ir(instructions: &Vec<IRInstruction>) -> String {
                     format!("Expected Label for Goto")
                 }
             },
+            Opcode::Try => {
+                " Try;".to_string()
+            },
+            Opcode::Catch => {
+                " Catch;".to_string()
+            },
             _ => format!(" Unsupported opcode: {:?}", instr.opcode),
 
         };

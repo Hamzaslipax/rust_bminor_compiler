@@ -41,6 +41,8 @@ pub enum Opcode {
     Bool,
     JumpBool,
     ReadFile,
+    Try,
+    Catch,
 }
 
 #[derive(Debug, Clone)]
@@ -396,6 +398,19 @@ fn generate_ir_recursive(ast: &Expr, instructions: &mut Vec<IRInstruction>, reg_
                 opcode: Opcode::PrintVar,
                 operands: vec![IRValue::TempReg(var_reg)],
             });
+        }
+
+        Expr::TryCatch(try_block, catch_block) => {
+            instructions.push(IRInstruction {
+                opcode: Opcode::Try,
+                operands: vec![],
+            });
+            generate_ir_recursive(try_block, instructions, reg_counter, label_counter);
+            instructions.push(IRInstruction {
+                opcode: Opcode::Catch,
+                operands: vec![],
+            });
+            generate_ir_recursive(catch_block, instructions, reg_counter, label_counter);
         }
 
         Expr::PrintStr(str) => {

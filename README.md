@@ -54,3 +54,14 @@ Das Projekt besteht aus mehreren Schritten, die alle innerhalb eines Prozesses d
 cargo run -- -i <input-file> -o <output-file> [-v]
 or
 ./target/debug/binary_name -i <input-file> -o <output-file> [-v]
+
+### Running Tests
+
+Run all integration tests with:
+
+```sh
+cargo test
+```
+
+This will build the project and execute tests in the `tests/` directory, including the `try_catch` test for the new syntax.
+

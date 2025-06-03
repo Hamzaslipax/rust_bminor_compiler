@@ -226,6 +226,12 @@ pub fn generate_assembly(ir: &Vec<IRInstruction>) -> String {
                     assembly_code.push_str(&format!("    call printf\n"));
                 }
             },
+            Opcode::Try => {
+                assembly_code.push_str("    ; try block\n");
+            },
+            Opcode::Catch => {
+                assembly_code.push_str("    ; catch block\n");
+            },
 
             Opcode::Label => {
                 info!("Label instruction: {:?}", instruction.operands);

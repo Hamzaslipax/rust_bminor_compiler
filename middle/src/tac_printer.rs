@@ -51,11 +51,13 @@ pub fn print_ir(instructions: &Vec<IRInstruction>) -> String {
                     _ => unreachable!(),
                 };
                 if let (IRValue::TempReg(left), IRValue::TempReg(right), IRValue::TempReg(result)) =
-                    (&instr.operands[0], &instr.operands[1], &instr.operands[2]) {
+                    (&instr.operands[0], &instr.operands[1], &instr.operands[2])
+                {
                     format!(" _t{} = _t{} {} _t{};", result, left, symbol, right)
                 } else if let (IRValue::TempReg(left), IRValue::Number(num), IRValue::TempReg(result)) =
-                    (&instr.operands[0], &instr.operands[1], &instr.operands[2]) {
-                    format!(" _t{} = _t{} {} _t{};", result, left, symbol, num)
+                    (&instr.operands[0], &instr.operands[1], &instr.operands[2])
+                {
+                    format!(" _t{} = _t{} {} {};", result, left, symbol, num)
                 }
                 else {
                     format!("Expected three TempRegs for {}", op)
@@ -84,9 +86,9 @@ pub fn print_ir(instructions: &Vec<IRInstruction>) -> String {
             },
             Opcode::BranchIfFalse => {
                 if let (IRValue::TempReg(cond), IRValue::Label(label)) = (&instr.operands[0], &instr.operands[1]) {
-                    format!(" BranchIfFasle _t{} L{};", cond, label)
+                    format!(" BranchIfFalse _t{} L{};", cond, label)
                 } else {
-                    format!("Expected TempReg and Label for BranchIfTrue")
+                    format!("Expected TempReg and Label for BranchIfFalse")
                 }
             },
             Opcode::JumpIfZero => {

@@ -413,14 +413,6 @@ fn generate_ir_recursive(ast: &Expr, instructions: &mut Vec<IRInstruction>, reg_
             generate_ir_recursive(catch_block, instructions, reg_counter, label_counter);
         }
 
-        Expr::PrintStr(str) => {
-            info!("Generating IR for print string: {:?}", str);
-            instructions.push(IRInstruction{
-                opcode: Opcode::PrintStr,
-                operands: vec![IRValue::Str(str.clone())],
-            })
-        }
-
 
 
         _ => panic!("Unsupported expression type for IR generation {:?}", ast),

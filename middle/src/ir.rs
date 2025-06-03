@@ -401,16 +401,47 @@ fn generate_ir_recursive(ast: &Expr, instructions: &mut Vec<IRInstruction>, reg_
         }
 
         Expr::TryCatch(try_block, catch_block) => {
+            // create labels for the catch block start and the end of the whole try/catch
+            let catch_label = *label_counter;
+            *label_counter += 1;
+            let end_label = *label_counter;
+            *label_counter += 1;
+
+            // mark beginning of try block
             instructions.push(IRInstruction {
                 opcode: Opcode::Try,
                 operands: vec![],
             });
+
+            // generate the try block IR
             generate_ir_recursive(try_block, instructions, reg_counter, label_counter);
+
+            // jump over the catch block when no error occurs
+            instructions.push(IRInstruction {
+                opcode: Opcode::Jump,
+                operands: vec![IRValue::Label(end_label)],
+            });
+
+            // label for the catch block start
+            instructions.push(IRInstruction {
+                opcode: Opcode::Label,
+                operands: vec![IRValue::Label(catch_label)],
+            });
+
+            // mark start of catch block
             instructions.push(IRInstruction {
                 opcode: Opcode::Catch,
                 operands: vec![],
             });
+
+            // generate the catch block IR
             generate_ir_recursive(catch_block, instructions, reg_counter, label_counter);
+
+            // label marking the end of try/catch
+            instructions.push(IRInstruction {
+                opcode: Opcode::Label,
+                operands: vec![IRValue::Label(end_label)],
+            });
         }
 
 

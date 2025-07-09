@@ -16,6 +16,7 @@ pub Expr: Expr = {
     <print:Print> => print,
     <if_else_stmt:IfElse> => if_else_stmt,
     <while_stmt:WhileStmt> => while_stmt,
+    <try_catch:TryCatch> => try_catch,
     <comparison_expr:ComparisonExpr> => comparison_expr,
     <add_expr:AddExpr> => add_expr,
 };
@@ -30,6 +31,7 @@ pub Statement: Expr = {
     <print:Print> => print,
     <if_else_stmt:IfElse> => if_else_stmt,
     <while_stmt:WhileStmt> => while_stmt,
+    <try_catch:TryCatch> => try_catch,
     <comparison_expr:ComparisonExpr> ";" => comparison_expr,
     <add_expr:AddExpr> ";" => add_expr,
 };
@@ -70,6 +72,10 @@ pub IfElse: Expr = {
 
 pub WhileStmt: Expr = {
     "while" "(" <condition:Expr> ")" "{" <body:StatementsOpt> "}" => Expr::While(Box::new(condition), Box::new(Expr::Statements(body))),
+};
+
+pub TryCatch: Expr = {
+    "try" "{" <try_block:StatementsOpt> "}" "catch" "{" <catch_block:StatementsOpt> "}" => Expr::TryCatch(Box::new(Expr::Statements(try_block)), Box::new(Expr::Statements(catch_block))),
 };
 
 pub ComparisonExpr: Expr = {

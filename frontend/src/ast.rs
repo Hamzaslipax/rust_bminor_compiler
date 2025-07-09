@@ -19,6 +19,7 @@ pub enum Expr {
     PrintStr(String),
     Program(Vec<Expr>),
     While(Box<Expr>, Box<Expr>),
+    TryCatch(Box<Expr>, Box<Expr>),
 }
 
 

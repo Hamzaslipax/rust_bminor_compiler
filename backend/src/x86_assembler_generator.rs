@@ -241,6 +241,32 @@ pub fn generate_assembly(ir: &Vec<IRInstruction>) -> String {
                 }
             },
 
+            Opcode::While => {
+                info!("While instruction: {:?}", instruction.operands);
+                if let (IRValue::Label(start_label), IRValue::TempReg(cond), IRValue::Label(end_label)) = (
+                    &instruction.operands[0],
+                    &instruction.operands[1],
+                    &instruction.operands[2],
+                ) {
+                    let reg_cond = get_register(*cond);
+                    assembly_code.push_str(&format!("label_{}:\n", start_label));
+                    assembly_code.push_str(&format!("    cmp {}, 0\n", reg_cond));
+                    assembly_code.push_str(&format!("    je label_{}\n", end_label));
+                }
+            },
+
+            Opcode::BranchWhile => {
+                info!("BranchWhile instruction: {:?}", instruction.operands);
+                if let (IRValue::TempReg(cond), IRValue::Label(label)) = (
+                    &instruction.operands[0],
+                    &instruction.operands[1],
+                ) {
+                    let reg_cond = get_register(*cond);
+                    assembly_code.push_str(&format!("    cmp {}, 0\n", reg_cond));
+                    assembly_code.push_str(&format!("    jne label_{}\n", label));
+                }
+            },
+
             Opcode::NotEqual | Opcode::Equal | Opcode::GreaterThan | Opcode::LessThan | Opcode::LessThanEqual | Opcode::GreaterThanEqual => {
                 info!("{:?} instruction: {:?}", instruction.opcode, instruction.operands);
                 if let (IRValue::TempReg(temp1), IRValue::TempReg(temp2), IRValue::TempReg(result)) = (&instruction.operands[0], &instruction.operands[1], &instruction.operands[2]) {
